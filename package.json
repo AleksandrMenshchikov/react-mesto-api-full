@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AleksandrMenshchikov/express-mesto.git"
+    "url": "git+https://github.com/AleksandrMenshchikov/react-mesto-api-full"
   },
   "author": "Aleksandr Menshchikov <aleksandr.menshikov@gmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/AleksandrMenshchikov/express-mesto/issues"
+    "url": "https://github.com/AleksandrMenshchikov/react-mesto-api-full/issues"
   },
-  "homepage": "https://github.com/AleksandrMenshchikov/express-mesto#readme",
+  "homepage": "https://github.com/AleksandrMenshchikov/react-mesto-api-full#readme",
   "devDependencies": {
     "eslint": "^7.8.1",
     "eslint-config-airbnb-base": "^14.2.0",
