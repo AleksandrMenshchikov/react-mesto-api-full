@@ -32,7 +32,17 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useFindAndModify: false,
 });
 
-app.use(cors({ origin: 'https://mesto-app.website' }));
+const whitelist = ['https://mesto-app.website', 'http://mesto-app.website'];
+const corsOptions = {
+  origin(origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+};
+app.use(cors(corsOptions));
 
 app.use(requestLogger); // подключаем логгер запросов
 
