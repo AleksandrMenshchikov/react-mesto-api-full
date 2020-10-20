@@ -1,0 +1,27 @@
+{
+  "files": {
+    "main.css": "/static/css/main.6748bbb9.chunk.css",
+    "main.js": "/static/js/main.aab88531.chunk.js",
+    "main.js.map": "/static/js/main.aab88531.chunk.js.map",
+    "runtime-main.js": "/static/js/runtime-main.e8402bce.js",
+    "runtime-main.js.map": "/static/js/runtime-main.e8402bce.js.map",
+    "static/js/2.018a070a.chunk.js": "/static/js/2.018a070a.chunk.js",
+    "static/js/2.018a070a.chunk.js.map": "/static/js/2.018a070a.chunk.js.map",
+    "index.html": "/index.html",
+    "precache-manifest.08d1be64de848ce813100046c564b979.js": "/precache-manifest.08d1be64de848ce813100046c564b979.js",
+    "service-worker.js": "/service-worker.js",
+    "static/css/main.6748bbb9.chunk.css.map": "/static/css/main.6748bbb9.chunk.css.map",
+    "static/js/2.018a070a.chunk.js.LICENSE.txt": "/static/js/2.018a070a.chunk.js.LICENSE.txt",
+    "static/media/index.css": "/static/media/vector.d476a8b8.svg",
+    "static/media/loading-gif1.gif": "/static/media/loading-gif1.41702357.gif",
+    "static/media/logo.svg": "/static/media/logo.c6f11019.svg",
+    "static/media/union-failed.svg": "/static/media/union-failed.f10ac534.svg",
+    "static/media/union.svg": "/static/media/union.e38b395c.svg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.e8402bce.js",
+    "static/js/2.018a070a.chunk.js",
+    "static/css/main.6748bbb9.chunk.css",
+    "static/js/main.aab88531.chunk.js"
+  ]
+}
