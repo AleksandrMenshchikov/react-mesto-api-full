@@ -34,18 +34,21 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 });
 
 // настройка cors
-const whitelist = ['https://mesto-app.website', 'http://mesto-app.website', 'http://localhost:3000'];
-const corsOptions = {
-  origin(origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+// const whitelist = ['https://mesto-app.website', 'http://mesto-app.website', 'http://localhost:3000'];
+// const corsOptions = {
+//   origin(origin, callback) {
+//     if (whitelist.indexOf(origin) !== -1) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+//   credentials: true,
+// };
+app.use(cors({
+  origin: 'http://localhost:3000',
   credentials: true,
-};
-app.use(cors(corsOptions));
+}));
 
 app.use(requestLogger); // подключаем логгер запросов
 
@@ -76,6 +79,12 @@ app.use(auth);
 // роуты, которым авторизация нужна
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
+
+app.use('/signout', (req, res) => {
+  res.clearCookie('jwt')
+    .status(200)
+    .send({ message: 'Успешный выход из системы' });
+});
 app.use('/*', require('./routes/pageNotFound'));
 
 app.use(errorLogger); // подключаем логгер ошибок
