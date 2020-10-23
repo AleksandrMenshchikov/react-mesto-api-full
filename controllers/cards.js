@@ -1,18 +1,15 @@
 const Card = require('../models/card');
 
-const NotFoundError = require('../errors/not-found-err.js');
-const BadRequestError = require('../errors/bad-request-err.js');
-
 module.exports.getCards = (req, res, next) => {
   Card.find({})
     .populate('owner').populate('likes')
     .then((cards) => {
       if (!cards) {
-        throw new NotFoundError('Карточки не найдены');
+        throw new Error('Карточки не найдены в базе данных');
       }
       res.json(cards);
     })
-    .catch(next);
+    .catch((err) => next(err));
 };
 
 module.exports.createCard = (req, res, next) => {
@@ -20,28 +17,26 @@ module.exports.createCard = (req, res, next) => {
 
   Card.create({ name, link, owner: req.user._id })
     .then((card) => {
-      if (!card) {
-        throw new BadRequestError('Карточка не создана');
-      }
       Card.findOne({ _id: card._id }).populate('owner').then((result) => res.json(result));
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'Переданы некорректные данные в методы создания карточки' });
-      }
-      return next(err);
-    });
+    .catch((err) => next(err));
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  Card.findByIdAndRemove(req.params.id)
+  Card.findById(req.params.id).populate('owner')
     .then((card) => {
-      if (!card) {
-        throw new NotFoundError('Карточка не найдена');
+      // eslint-disable-next-line eqeqeq
+      if (req.user._id == card.owner._id) {
+        Card.findByIdAndRemove(req.params.id)
+          .then((result) => {
+            res.json(result);
+          })
+          .catch((err) => next(err));
+      } else {
+        throw new Error('Попытка удалить чужую карту');
       }
-      res.send({ data: card });
     })
-    .catch(next);
+    .catch((err) => next(err));
 };
 
 module.exports.likeCard = (req, res, next) => {
@@ -53,11 +48,11 @@ module.exports.likeCard = (req, res, next) => {
     .populate('likes').populate('owner')
     .then((card) => {
       if (!card) {
-        throw new NotFoundError('Карточка не найдена');
+        throw new Error('Не удалось поставить лайк карточке по данному id');
       }
       res.json(card);
     })
-    .catch(next);
+    .catch((err) => next(err));
 };
 
 module.exports.dislikeCard = (req, res, next) => {
@@ -68,9 +63,9 @@ module.exports.dislikeCard = (req, res, next) => {
   )
     .populate('likes').populate('owner').then((card) => {
       if (!card) {
-        throw new NotFoundError('Карточка не найдена');
+        throw new Error('Не удалось поставить дизлайк карточке по данному id');
       }
       res.json(card);
     })
-    .catch(next);
+    .catch((err) => next(err));
 };

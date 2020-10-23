@@ -6,45 +6,29 @@ const {
 
 router.delete('/:id', celebrate({
   params: Joi.object().keys({
-    id: Joi.string().required(),
+    id: Joi.string().required().hex(),
   }),
-  headers: Joi.object().keys({
-    authorization: Joi.string().required(),
-  }).unknown(true),
 }), deleteCard);
 
 router.put('/likes/:cardId', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().required(),
+    cardId: Joi.string().required().hex(),
   }),
-  headers: Joi.object().keys({
-    authorization: Joi.string().required(),
-  }).unknown(true),
 }), likeCard);
 
 router.delete('/likes/:cardId', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().required(),
+    cardId: Joi.string().required().hex(),
   }),
-  headers: Joi.object().keys({
-    authorization: Joi.string().required(),
-  }).unknown(true),
 }), dislikeCard);
 
-router.get('/', celebrate({
-  headers: Joi.object().keys({
-    authorization: Joi.string().required(),
-  }).unknown(true),
-}), getCards);
+router.get('/', getCards);
 
 router.post('/', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30).required(),
-    link: Joi.string().required(),
+    link: Joi.string().required().pattern(/^https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,}$/),
   }),
-  headers: Joi.object().keys({
-    authorization: Joi.string().required(),
-  }).unknown(true),
 }), createCard);
 
 module.exports = router;

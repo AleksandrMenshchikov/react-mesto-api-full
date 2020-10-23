@@ -2,50 +2,50 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
-const NotFoundError = require('../errors/not-found-err.js');
-const BadRequestError = require('../errors/bad-request-err.js');
-
 const { NODE_ENV, JWT_SECRET } = process.env;
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => {
       if (!users) {
-        throw new NotFoundError('Пользователи не найдены');
+        throw new Error('Пользователи не найдены в базе данных');
       }
       res.status(200).send({ data: users });
     })
-    .catch(next);
+    .catch((err) => next(err));
 };
 
 module.exports.getUser = (req, res, next) => {
-  User.findById(req.user._id)
+  User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('Пользователь не найден');
+        throw new Error('Пользователь не найден с данным id');
       }
       res.status(200).json(user);
     })
-    .catch(next);
+    .catch((err) => next(err));
+};
+
+module.exports.getOwnUser = (req, res, next) => {
+  User.findById(req.user._id)
+    .then((user) => {
+      if (!user) {
+        throw new Error('Пользователь не найден с данным id');
+      }
+      res.status(200).json(user);
+    })
+    .catch((err) => next(err));
 };
 
 module.exports.createUser = (req, res, next) => {
   const {
-    name = 'Жак-Ив Кусто́',
-    about = 'Исследователь Мирового океана',
-    avatar = 'https://www.culture.ru/storage/images/7402348bcfde8ad237620a095b568c12/f33b1160f0b1e42a11f80583a84f5a9f.jpeg',
     email,
     password,
   } = req.body;
 
   bcrypt.hash(password, 10)
     .then((hash) => {
-      if (!hash) {
-        throw new BadRequestError('Пользователь не создан');
-      }
-      User.create({
-        name, about, avatar, email, password: hash,
-      }).then((user) => {
+      User.create({ email, password: hash }).then((user) => {
         res.status(201).send({
           data: {
             _id: user._id,
@@ -55,17 +55,8 @@ module.exports.createUser = (req, res, next) => {
             email: user.email,
           },
         });
-      }).catch((err) => {
-        if (err.message.includes('unique')) {
-          res.status(400).send({ message: 'Пользователь с таким email уже существует' });
-        } else if (err.message.includes('email')) {
-          res.status(400).send({ message: 'Неправильно указан email или пароль' });
-        } else {
-          res.status(400).send({ message: 'Что-то пошло не так' });
-        }
-        next(err);
-      });
-    }).catch(next);
+      }).catch((err) => next(err));
+    }).catch((err) => next(err));
 };
 
 module.exports.updateProfile = (req, res, next) => {
@@ -78,11 +69,11 @@ module.exports.updateProfile = (req, res, next) => {
   })
     .then((user) => {
       if (!user) {
-        throw new BadRequestError('Данные пользователя не обновились');
+        throw new Error('Не удалось обновить профиль по данному id');
       }
       res.status(200).json(user);
     })
-    .catch(next);
+    .catch((err) => next(err));
 };
 
 module.exports.updateAvatar = (req, res, next) => {
@@ -95,7 +86,7 @@ module.exports.updateAvatar = (req, res, next) => {
   })
     .then((user) => {
       if (!user) {
-        throw new BadRequestError('Аватар пользователя не обновился');
+        throw new Error('Не удалось обновить аватар по данному id');
       }
       res.status(200).json(user);
     })
@@ -111,20 +102,25 @@ module.exports.updateAvatar = (req, res, next) => {
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
+  let userMatched;
+
   User.findOne({ email }).select('+password')
     .then((user) => {
-      if (!user) {
-        throw new BadRequestError('Неправильно указан email или пароль');
+      userMatched = user;
+      return bcrypt.compare(password, user.password);
+    })
+    .then((matched) => {
+      // аутентификация успешна
+      if (matched) {
+        const token = jwt.sign({ _id: userMatched._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret');
+
+        res.cookie('jwt', token, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+          sameSite: true,
+        }).status(201).send({ userId: userMatched._id });
       }
-      return bcrypt.compare(password, user.password)
-        .then((matched) => {
-          if (!matched) {
-            // хеши не совпали — отклоняем промис
-            throw new BadRequestError('Неправильно указан email или пароль');
-          }
-          // аутентификация успешна
-          const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret');
-          return res.status(201).send({ token });
-        }).catch(next);
-    }).catch(next);
+      throw new Error('Неправильно указан email или пароль');
+    })
+    .catch((err) => next(err));
 };
