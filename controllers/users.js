@@ -16,18 +16,9 @@ module.exports.getUsers = (req, res, next) => {
 };
 
 module.exports.getUser = (req, res, next) => {
-  User.findById(req.params.userId)
-    .then((user) => {
-      if (!user) {
-        throw new Error('Пользователь не найден с данным id');
-      }
-      res.status(200).json(user);
-    })
-    .catch((err) => next(err));
-};
+  const param = req.params.userId === 'me' ? req.user._id : req.params.userId;
 
-module.exports.getOwnUser = (req, res, next) => {
-  User.findById(req.user._id)
+  User.findById(param)
     .then((user) => {
       if (!user) {
         throw new Error('Пользователь не найден с данным id');
