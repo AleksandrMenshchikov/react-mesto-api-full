@@ -34,18 +34,18 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 });
 
 // настройка cors
-const whitelist = ['https://mesto-app.website', 'http://mesto-app.website', 'http://localhost:3000'];
-const corsOptions = {
-  origin(origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-};
-app.use(cors(corsOptions));
+// const whitelist = ['https://mesto-app.website', 'http://mesto-app.website', 'http://localhost:3000'];
+// const corsOptions = {
+//   origin(origin, callback) {
+//     if (whitelist.indexOf(origin) !== -1) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+//   credentials: true,
+// };
+app.use(cors('*'));
 
 app.use(requestLogger); // подключаем логгер запросов
 
@@ -90,24 +90,23 @@ app.use(errorLogger); // подключаем логгер ошибок
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   // если у ошибки нет статуса, выставляем 500
-  const { statusCode = 500 } = err;
+  const { statusCode = 500, message } = err;
 
   if (err.name === 'MongoError' && err.code === 11000) {
     res.status(409).send({ message: 'Пользователь с таким email уже существует' });
-  } else if (err.message.includes('email')) {
-    res.status(400).send({ message: 'Неправильно указан email или пароль' });
   } else if (err.message === 'celebrate request validation failed') {
     res.status(400).send({ message: 'Отправленные данные не прошли валидацию' });
-  } else if (err.message === 'Попытка удалить чужую карту') {
-    res.status(403).send({ message: err.message });
   } else if (err.name === 'CastError') {
-    res.status(400).send({ message: 'Попытка удалить объект с невалидным id' });
-  } else if (err.message === 'Пользователь с таким id не найден') {
-    res.status(400).send({ message: err.message });
-  } else if (err.message) {
-    res.status(400).send({ message: err.message });
+    res.status(400).send({ message: 'Попытка удалить карточку с невалидным id' });
   } else {
-    res.status(statusCode).send({ message: 'На сервере произошла ошибка' });
+    res
+      .status(statusCode)
+      .send({
+      // проверяем статус и выставляем сообщение в зависимости от него
+        message: statusCode === 500
+          ? 'На сервере произошла ошибка'
+          : message,
+      });
   }
 });
 

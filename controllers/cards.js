@@ -1,3 +1,6 @@
+const NotFoundError = require('../errors/not-found-error');
+const Forbidden = require('../errors/forbidden-error');
+const BadRequestError = require('../errors/bad-request-error');
 const Card = require('../models/card');
 
 module.exports.getCards = (req, res, next) => {
@@ -5,7 +8,7 @@ module.exports.getCards = (req, res, next) => {
     .populate('owner').populate('likes')
     .then((cards) => {
       if (!cards) {
-        throw new Error('Карточки не найдены в базе данных');
+        throw new NotFoundError('Карточки не найдены в базе данных');
       }
       res.json(cards);
     })
@@ -25,6 +28,9 @@ module.exports.createCard = (req, res, next) => {
 module.exports.deleteCard = (req, res, next) => {
   Card.findById(req.params.id).populate('owner')
     .then((card) => {
+      if (!card) {
+        throw new NotFoundError('Карточки с данным id нет в базе данных');
+      }
       // eslint-disable-next-line eqeqeq
       if (req.user._id == card.owner._id) {
         Card.findByIdAndRemove(req.params.id)
@@ -33,7 +39,7 @@ module.exports.deleteCard = (req, res, next) => {
           })
           .catch((err) => next(err));
       } else {
-        throw new Error('Попытка удалить чужую карту');
+        throw new Forbidden('Попытка удалить чужую карту');
       }
     })
     .catch((err) => next(err));
@@ -48,7 +54,7 @@ module.exports.likeCard = (req, res, next) => {
     .populate('likes').populate('owner')
     .then((card) => {
       if (!card) {
-        throw new Error('Не удалось поставить лайк карточке по данному id');
+        throw new BadRequestError('Не удалось поставить лайк карточке по данному id');
       }
       res.json(card);
     })
@@ -63,7 +69,7 @@ module.exports.dislikeCard = (req, res, next) => {
   )
     .populate('likes').populate('owner').then((card) => {
       if (!card) {
-        throw new Error('Не удалось поставить дизлайк карточке по данному id');
+        throw new BadRequestError('Не удалось поставить дизлайк карточке по данному id');
       }
       res.json(card);
     })

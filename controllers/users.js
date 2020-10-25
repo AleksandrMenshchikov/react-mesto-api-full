@@ -1,5 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const NotFoundError = require('../errors/not-found-error');
+const BadRequestError = require('../errors/bad-request-error');
 const User = require('../models/user');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
@@ -8,7 +10,7 @@ module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => {
       if (!users) {
-        throw new Error('Пользователи не найдены в базе данных');
+        throw new NotFoundError('Пользователи не найдены в базе данных');
       }
       res.status(200).send({ data: users });
     })
@@ -21,7 +23,7 @@ module.exports.getUser = (req, res, next) => {
   User.findById(param)
     .then((user) => {
       if (!user) {
-        throw new Error('Пользователь не найден с данным id');
+        throw new NotFoundError('Пользователь не найден с данным id');
       }
       res.status(200).json(user);
     })
@@ -60,7 +62,7 @@ module.exports.updateProfile = (req, res, next) => {
   })
     .then((user) => {
       if (!user) {
-        throw new Error('Не удалось обновить профиль по данному id');
+        throw new BadRequestError('Не удалось обновить профиль по данному id');
       }
       res.status(200).json(user);
     })
@@ -77,17 +79,11 @@ module.exports.updateAvatar = (req, res, next) => {
   })
     .then((user) => {
       if (!user) {
-        throw new Error('Не удалось обновить аватар по данному id');
+        throw new BadRequestError('Не удалось обновить аватар по данному id');
       }
       res.status(200).json(user);
     })
-    .catch((err) => {
-      // eslint-disable-next-line no-underscore-dangle
-      if (err._message) {
-        res.status(400).send({ message: 'Неправильно указан url' });
-      }
-      next(err);
-    });
+    .catch((err) => next(err));
 };
 
 module.exports.login = (req, res, next) => {
@@ -97,6 +93,9 @@ module.exports.login = (req, res, next) => {
 
   User.findOne({ email }).select('+password')
     .then((user) => {
+      if (!user) {
+        throw new BadRequestError('Неправильно указан email или пароль');
+      }
       userMatched = user;
       return bcrypt.compare(password, user.password);
     })
@@ -111,7 +110,7 @@ module.exports.login = (req, res, next) => {
           sameSite: true,
         }).status(201).send({ userId: userMatched._id });
       }
-      throw new Error('Неправильно указан email или пароль');
+      throw new BadRequestError('Неправильно указан email или пароль');
     })
     .catch((err) => next(err));
 };
