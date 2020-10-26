@@ -38,17 +38,18 @@ module.exports.createUser = (req, res, next) => {
 
   bcrypt.hash(password, 10)
     .then((hash) => {
-      User.create({ email, password: hash }).then((user) => {
-        res.status(201).send({
-          data: {
-            _id: user._id,
-            name: user.name,
-            about: user.about,
-            avatar: user.avatar,
-            email: user.email,
-          },
-        });
-      }).catch((err) => next(err));
+      User.create({ email, password: hash })
+        .then((user) => {
+          res.status(201).send({
+            data: {
+              _id: user._id,
+              name: user.name,
+              about: user.about,
+              avatar: user.avatar,
+              email: user.email,
+            },
+          });
+        }).catch((err) => next(err));
     }).catch((err) => next(err));
 };
 
