@@ -6,6 +6,6 @@
 
  * [Ссылка на сайт, размещенный на Яндекс.Облаке](https://mesto-app.website)
 
- * IP адрес сайта 178.154.226.219
+ * IP адрес сайта 178.154.230.83
 
  * Адрес API(back-end) https://api.mesto-app.website/
